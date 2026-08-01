@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Petite demande</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d1d1f;
+    --ink-soft:#6e6e73;
+    --bg:#fbfaf8;
+    --accent:#ff375f;
+    --accent-2:#ff8a65;
+    --card:rgba(255,255,255,.6);
+    --card-border:rgba(0,0,0,.08);
+    --ease:cubic-bezier(.16,1,.3,1);
+    --spring:cubic-bezier(.34,1.56,.64,1);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0; min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); background:var(--bg);
+    overflow-x:hidden; position:relative; -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- écran de chargement cœur blanc ---------- */
+  .poweron{
+    position:fixed; inset:0; z-index:10000; overflow:hidden;
+    background:radial-gradient(circle at 50% 38%, #ff8fa8 0%, #ff6f91 38%, #e0466e 78%, #c73a5c 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px;
+    transition:opacity .8s cubic-bezier(.4,0,.2,1);
+  }
+  .poweron.fade{opacity:0; pointer-events:none;}
+  .poweron-orb{position:absolute; border-radius:50%; filter:blur(60px); opacity:.5; will-change:transform;}
+  .poweron-orb.o1{width:60vw; height:60vw; background:#ffb6c6; top:-18%; left:-16%; animation:poweronDrift1 7s ease-in-out infinite;}
+  .poweron-orb.o2{width:48vw; height:48vw; background:#ffd9c2; bottom:-16%; right:-12%; animation:poweronDrift2 8.5s ease-in-out infinite;}
+  @keyframes poweronDrift1{0%,100%{transform:translate(0,0);} 50%{transform:translate(4%,5%);}}
+  @keyframes poweronDrift2{0%,100%{transform:translate(0,0);} 50%{transform:translate(-5%,-4%);}}
+  .poweron-heart{width:min(84px, 20vw); height:auto; position:relative; z-index:1; overflow:visible;
+    filter:drop-shadow(0 12px 26px rgba(120,10,40,.28));}
+  .poweron-heart path{
+    fill:#ffffff; fill-opacity:0; stroke:#ffffff; stroke-width:5.5; stroke-linejoin:round; stroke-linecap:round;
+    stroke-dasharray:300; stroke-dashoffset:300;
+    animation:poweronDraw 1.05s cubic-bezier(.65,0,.35,1) forwards, poweronBeat 1.05s ease-in-out 1s infinite;
+  }
+  @keyframes poweronDraw{
+    0%{stroke-dashoffset:300; fill-opacity:0;}
+    68%{stroke-dashoffset:0; fill-opacity:0;}
+    100%{stroke-dashoffset:0; fill-opacity:1;}
+  }
+  @keyframes poweronBeat{
+    0%,100%{transform:scale(1);}
+    18%{transform:scale(1.12);}
+    32%{transform:scale(.97);}
+    46%{transform:scale(1.07);}
+    64%{transform:scale(1);}
+  }
+  .poweron-label{
+    position:relative; z-index:1; font-size:13px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+    color:rgba(255,255,255,.85); opacity:0; transition:opacity .6s var(--ease);
+  }
+  .poweron-label.show{opacity:1;}
+
+  #app{
+    opacity:0; transform:scale(1.04); filter:blur(16px);
+    transition:opacity 1s var(--ease), transform 1s var(--ease), filter 1s var(--ease);
+  }
+  #app.woke{opacity:1; transform:scale(1); filter:blur(0);}
+
+  .lock-clock{text-align:center; margin-bottom:18px;}
+  .lock-time{font-size:clamp(52px,13vw,80px); font-weight:600; letter-spacing:-0.02em; color:var(--ink); line-height:1; font-variant-numeric:tabular-nums;}
+  .lock-date{font-size:14.5px; font-weight:600; color:var(--ink-soft); margin-top:6px; text-transform:capitalize;}
+
+  .lock-card{
+    width:min(380px, 90vw); background:var(--card); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);
+    border-radius:32px; box-shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 30px 70px rgba(0,0,0,.14), 0 0 0 1px var(--card-border);
+    padding:38px 30px 30px; text-align:center;
+  }
+  /* ---------- page "Qui es-tu" — carte identité façon Apple ---------- */
+  #page-name .id-card{
+    width:min(400px, 92vw); background:var(--card); backdrop-filter:blur(34px); -webkit-backdrop-filter:blur(34px);
+    border-radius:36px; box-shadow:0 1px 0 rgba(255,255,255,.55) inset, 0 34px 80px rgba(0,0,0,.16), 0 0 0 1px var(--card-border);
+    padding:46px 32px 26px; text-align:center;
+  }
+  #page-name .id-badge{
+    width:52px; height:52px; margin:0 auto 22px; border-radius:16px;
+    background:linear-gradient(150deg,#ffffff,#f2f1ee);
+    box-shadow:0 1px 0 rgba(255,255,255,.8) inset, 0 8px 20px rgba(0,0,0,.10);
+    display:flex; align-items:center; justify-content:center;
+  }
+  #page-name .id-badge svg{width:23px; height:21px;}
+  #page-name .lead{max-width:280px; margin-left:auto; margin-right:auto;}
+  #page-name input[type="text"]{width:100%; margin-bottom:30px;}
+
+  .touchid-wrap{display:flex; flex-direction:column; align-items:center; gap:46px;}
+  .touchid-btn{
+    position:relative; width:92px; height:92px; border-radius:50%; border:none; padding:0;
+    background:transparent; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:none;
+  }
+  .touchid-ring{position:absolute; inset:0; width:100%; height:100%;}
+  .ring-bg{fill:none; stroke:var(--card-border); stroke-width:2.5;}
+  .ring-progress{fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round;}
+  .touchid-face{
+    position:absolute; margin:9px; width:calc(100% - 18px); height:calc(100% - 18px); border-radius:50%;
+    background:var(--card); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    box-shadow:0 1px 0 rgba(255,255,255,.65) inset, 0 10px 26px rgba(0,0,0,.14);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .25s var(--spring), box-shadow .25s ease;
+  }
+  .touchid-btn.active .touchid-face{transform:scale(.92); box-shadow:0 1px 0 rgba(255,255,255,.65) inset, 0 4px 14px rgba(255,55,95,.25);}
+  .touchid-icon{width:42px; height:42px; color:var(--ink); opacity:.75; transition:color .25s ease, opacity .25s ease;}
+  .touchid-btn.active .touchid-icon{color:var(--accent); opacity:1;}
+  .touchid-label{font-size:12.5px; font-weight:600; color:var(--ink-soft); letter-spacing:.01em; transition:color .2s ease;}
+  .touchid-btn.active ~ .touchid-label{color:var(--accent);}
+
+  /* ---------- overlay HeartID (façon Face ID) ---------- */
+  .faceid-overlay{
+    position:fixed; inset:0; z-index:10001;
+    background:radial-gradient(circle at 50% 42%, #ffe3e8 0%, #ffe9d6 55%, #fff8f3 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;
+    opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .faceid-overlay.show{opacity:1; pointer-events:auto;}
+  .faceid-frame{width:112px; height:112px;}
+  .faceid-brackets{width:100%; height:100%; overflow:visible;}
+  .bracket{
+    fill:none; stroke:var(--ink); stroke-width:6; stroke-linecap:round;
+    opacity:0; transform:scale(.85); transform-origin:60px 60px;
+    transition:opacity .35s ease, transform .35s var(--spring), stroke .25s ease;
+  }
+  .faceid-overlay.show .bracket{opacity:.75; transform:scale(1);}
+  .faceid-overlay.fail .bracket{stroke:var(--accent);}
+  .scan-line{stroke:var(--accent); stroke-width:3; stroke-linecap:round; opacity:0;}
+  .faceid-overlay.show .scan-line{opacity:.9; animation:scanMove .55s ease-in-out infinite alternate;}
+  .faceid-overlay.success .scan-line, .faceid-overlay.fail .scan-line{animation:none; opacity:0;}
+  @keyframes scanMove{from{transform:translateY(-26px);} to{transform:translateY(26px);}}
+  .faceid-heart{
+    fill:#ffffff; fill-opacity:0; stroke:#ffffff; stroke-width:4; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:300; stroke-dashoffset:300; opacity:0;
+    filter:drop-shadow(0 6px 16px rgba(255,55,95,.32));
+  }
+  .faceid-overlay.success .faceid-heart{
+    opacity:1; stroke-dashoffset:0; fill-opacity:1;
+    transition:opacity .2s ease, stroke-dashoffset .5s var(--ease), fill-opacity .3s ease .35s;
+  }
+  .faceid-overlay.fail .faceid-frame{animation:idShake .4s ease;}
+  @keyframes idShake{0%,100%{transform:translateX(0);} 20%{transform:translateX(-8px);} 40%{transform:translateX(8px);} 60%{transform:translateX(-5px);} 80%{transform:translateX(5px);}}
+  .faceid-label{font-size:13.5px; font-weight:600; color:var(--ink-soft); letter-spacing:.02em;}
+  .faceid-overlay.success .faceid-label{color:var(--accent);}
+  .faceid-overlay.fail .faceid-label{color:var(--accent);}
+
+  /* ---------- page notification masquée (porte d'entrée) ---------- */
+  .blurred-text{filter:blur(5px); user-select:none; transition:filter .3s ease;}
+  .gate-card{transition:transform .3s var(--spring), opacity .3s ease;}
+  .gate-card.opened{transform:scale(.96); opacity:.8;}
+
+  .mesh{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;}
+  .mesh span{position:absolute; border-radius:50%; filter:blur(70px); opacity:.55; will-change:transform;}
+  .mesh span:nth-child(1){width:46vw;height:46vw; background:#ffd9d0; top:-10%; left:-10%; animation:float1 22s ease-in-out infinite;}
+  .mesh span:nth-child(2){width:38vw;height:38vw; background:#ffe9c7; bottom:-12%; right:-8%; animation:float2 26s ease-in-out infinite;}
+  .mesh span:nth-child(3){width:30vw;height:30vw; background:#ffd0e0; top:35%; left:55%; animation:float3 30s ease-in-out infinite;}
+  @keyframes float1{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(6%,8%) scale(1.08);}}
+  @keyframes float2{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-8%,-6%) scale(1.12);}}
+  @keyframes float3{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-10%,10%) scale(.9);}}
+
+  .particles{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none;}
+  .particle{position:absolute; bottom:-10%; opacity:0; animation:floatUp linear infinite;}
+  .particle.dot{border-radius:50%; background:var(--accent-2); filter:blur(1px);}
+  .particle.heart{color:#ffffff; filter:drop-shadow(0 1px 3px rgba(0,0,0,.4));}
+  @keyframes floatUp{
+    0%{transform:translateY(0) translateX(0) rotate(0deg); opacity:0;}
+    12%{opacity:.55;}
+    50%{transform:translateY(-58vh) translateX(14px) rotate(8deg);}
+    88%{opacity:.35;}
+    100%{transform:translateY(-118vh) translateX(-12px) rotate(-10deg); opacity:0;}
+  }
+
+  #app{min-height:100vh; width:100%; position:relative; z-index:1;}
+  .page{
+    min-height:100vh; width:100%; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+    padding:110px 24px 90px; position:relative;
+  }
+  .page.active{display:flex;}
+
+  .reveal-item{
+    opacity:0; filter:blur(8px); transform:translateY(22px);
+    transition:opacity .8s var(--ease), filter .8s var(--ease), transform .8s var(--ease);
+  }
+  .reveal-item.show{opacity:1; filter:blur(0); transform:translateY(0);}
+
+  .curtain{
+    position:fixed; inset:0; z-index:9999; pointer-events:none;
+    display:flex; align-items:center; justify-content:center;
+    clip-path:circle(0% at 50% 55%);
+    transition:clip-path .65s var(--ease);
+    background:radial-gradient(circle at 50% 45%, #ffe3e8 0%, #ffe9d6 55%, #fff8f3 100%);
+  }
+  .curtain.active{clip-path:circle(80% at 50% 55%);}
+  .curtain-heart{
+    width:46px; height:42px; opacity:0; transform:scale(.5);
+    filter:drop-shadow(0 8px 22px rgba(255,55,95,.3));
+    transition:opacity .4s ease .18s, transform .4s var(--spring) .18s;
+  }
+  .curtain.active .curtain-heart{opacity:1; transform:scale(1);}
+  .curtain-heart-path{
+    stroke:#ffffff; stroke-width:3; fill:#ffffff; fill-opacity:0;
+    stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:340; stroke-dashoffset:340;
+  }
+  .curtain.active .curtain-heart-path{animation:drawHeart .55s var(--ease) forwards .22s, fillHeart .35s var(--ease) forwards .68s;}
+
+  .progress{position:fixed; top:26px; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:10;}
+  .progress .dot{width:6px; height:6px; border-radius:50%; background:var(--ink-soft); opacity:.3; transition:all .5s var(--ease);}
+  .progress .dot.on{opacity:1; background:var(--accent); width:18px; border-radius:3px;}
+
+  .hero-mark{margin-bottom:18px;}
+  .hero-mark svg{width:56px; height:52px;}
+  .hero-heart{stroke:#ffffff; stroke-width:2.6; fill:#ffffff; fill-opacity:0; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:340; stroke-dashoffset:340; filter:drop-shadow(0 3px 12px rgba(0,0,0,.3));
+    animation:drawHeart 1.4s var(--ease) forwards .3s, fillHeart .6s var(--ease) forwards 1.5s;}
+  @keyframes drawHeart{to{stroke-dashoffset:0;}}
+  @keyframes fillHeart{to{fill-opacity:1;}}
+
+  .script-tagline{
+    font-family:'Playfair Display', serif; font-style:italic; font-weight:500;
+    font-size:19px; color:var(--accent); margin-bottom:10px; text-align:center;
+  }
+
+  .eyebrow{font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; text-align:center;}
+  h1{font-size:clamp(30px,6vw,48px); font-weight:700; letter-spacing:-0.02em; line-height:1.08; margin:0 0 16px; text-align:center; color:var(--ink);}
+  p.lead{font-size:clamp(16px,2.2vw,19px); line-height:1.55; color:var(--ink-soft); text-align:center; max-width:460px; margin:0 0 34px; font-weight:400;}
+
+  .btn{font-family:inherit; font-weight:600; font-size:16px; border:none; border-radius:980px; padding:15px 32px; cursor:pointer;
+    background:var(--ink); color:var(--bg); transition:transform .35s var(--spring), box-shadow .3s var(--ease), background .3s var(--ease);
+    box-shadow:0 1px 2px rgba(0,0,0,.06);}
+  .btn:hover{transform:scale(1.035);}
+  .btn:active{transform:scale(.96);}
+  .btn.accent{background:var(--accent); color:#fff; box-shadow:0 8px 24px rgba(255,55,95,.35); position:relative;}
+  .btn.outline{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--card-border);}
+  .btn[disabled]{opacity:.6; pointer-events:none;}
+
+  .glow-pulse{position:absolute; inset:-14px; border-radius:980px; background:var(--accent); opacity:.35; z-index:-1;
+    animation:pulseGlow 2.4s ease-in-out infinite;}
+  @keyframes pulseGlow{0%,100%{transform:scale(1); opacity:.3;} 50%{transform:scale(1.18); opacity:.05;}}
+
+  input[type="text"]{
+    font-family:inherit; font-size:19px; font-weight:500; text-align:center; padding:16px 22px; border:none; border-radius:16px;
+    background:var(--card); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    box-shadow:inset 0 0 0 1px var(--card-border); color:var(--ink); width:min(300px, 80vw); outline:none; margin-bottom:26px;
+    transition:box-shadow .25s var(--ease), transform .25s var(--ease);
+  }
+  input[type="text"]:focus{box-shadow:inset 0 0 0 1.5px var(--accent), 0 0 0 5px rgba(255,55,95,.12); transform:scale(1.015);}
+  input[type="text"]::placeholder{color:var(--ink-soft);}
+  #page-name form{display:flex; flex-direction:column; align-items:center;}
+
+  #page-reject h1{color:var(--accent);}
+
+  /* ---------- notification iOS ---------- */
+  .notif-card{
+    width:min(380px, 88vw);
+    background:var(--card);
+    backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+    border-radius:22px;
+    box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 20px 50px rgba(0,0,0,.15);
+    padding:16px;
+    cursor:pointer;
+    transition:transform .35s var(--spring);
+    animation:notifDrop .7s var(--spring) both .25s;
+  }
+  @keyframes notifDrop{from{transform:translateY(-46px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .notif-card:hover{transform:translateY(-3px);}
+  .notif-top{display:flex; gap:12px; align-items:flex-start;}
+  .notif-icon{
+    width:42px; height:42px; border-radius:12px; flex-shrink:0; position:relative;
+    background:linear-gradient(135deg,#6ee08a,#1fb855);
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    box-shadow:0 4px 12px rgba(31,184,85,.35);
+  }
+  .notif-badge{
+    position:absolute; top:-5px; right:-5px; min-width:19px; height:19px; padding:0 4px;
+    border-radius:999px; background:#ff3b30; color:#fff; font-size:11.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+    box-shadow:0 0 0 2.5px var(--bg); animation:badgePop .5s var(--spring) both .5s;
+  }
+  @keyframes badgePop{from{transform:scale(0);} to{transform:scale(1);}}
+  .notif-meta{flex:1; min-width:0;}
+  .notif-app-row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3px;}
+  .notif-app{font-size:11.5px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+  .notif-time{font-size:12px; color:var(--ink-soft);}
+  .notif-sender{font-size:15px; font-weight:700; color:var(--ink); margin-bottom:2px;}
+  .notif-preview{font-size:14px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .notif-tap{font-size:11px; color:var(--ink-soft); text-align:center; margin-top:12px; opacity:.6; letter-spacing:.02em;}
+
+  .notif-card.open .notif-top,
+  .notif-card.open .notif-tap{display:none;}
+  .chat-thread{display:none; flex-direction:column; gap:9px;}
+  .notif-card.open .chat-thread{display:flex;}
+  .messages-list{display:flex; flex-direction:column; gap:9px;}
+
+  .bubble{
+    max-width:84%; align-self:flex-end;
+    background:linear-gradient(135deg,#0a84ff,#0066e0);
+    color:#fff; padding:11px 15px; border-radius:20px; border-bottom-right-radius:6px;
+    font-size:14.5px; line-height:1.45;
+    opacity:0; transform:translateY(10px) scale(.92);
+    animation:bubbleIn .45s var(--spring) forwards;
+  }
+  @keyframes bubbleIn{to{opacity:1; transform:translateY(0) scale(1);}}
+  .typing-bubble{
+    align-self:flex-end; background:rgba(127,127,127,.2); padding:13px 16px;
+    border-radius:20px; border-bottom-right-radius:6px; display:flex; gap:4px; width:fit-content;
+  }
+  .typing-bubble span{width:6px; height:6px; border-radius:50%; background:var(--ink-soft); display:block; animation:typingBounce 1s ease-in-out infinite;}
+  .typing-bubble span:nth-child(2){animation-delay:.15s;}
+  .typing-bubble span:nth-child(3){animation-delay:.3s;}
+  @keyframes typingBounce{0%,60%,100%{transform:translateY(0); opacity:.4;} 30%{transform:translateY(-4px); opacity:1;}}
+
+  .reply-bar{
+    display:flex; align-items:center; gap:8px; margin-top:16px;
+    opacity:0; transform:translateY(10px);
+    transition:opacity .5s var(--ease), transform .5s var(--ease);
+    pointer-events:none;
+  }
+  .reply-bar.show{opacity:1; transform:translateY(0); pointer-events:auto;}
+  .reply-field{
+    flex:1; min-width:0;
+    font-size:14px; font-weight:500; color:var(--ink-soft);
+    background:rgba(127,127,127,.12);
+    border:1px solid var(--card-border);
+    border-radius:18px;
+    padding:9px 16px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .reply-send{
+    flex-shrink:0; width:32px; height:32px; border-radius:50%; border:none; padding:0;
+    background:linear-gradient(135deg,#0a84ff,#0066e0);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:0 4px 10px rgba(10,132,255,.4);
+    transition:transform .3s var(--spring);
+  }
+  .reply-send:hover{transform:scale(1.08);}
+  .reply-send:active{transform:scale(.9);}
+  .reply-send svg{width:15px; height:15px;}
+
+  #page-question{overflow:hidden;}
+  .q-card{
+    width:min(460px, 92vw); background:var(--card); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+    border-radius:28px; box-shadow:0 0 0 1px var(--card-border), 0 30px 60px rgba(0,0,0,.12);
+    padding:44px 30px 38px; text-align:center;
+  }
+  .buttons-field{position:relative; width:100%; height:150px; margin-top:20px;}
+  #btn-oui, #btn-non{position:absolute !important; top:50%; margin:0; transition:left .45s var(--spring), top .45s var(--spring), transform .3s var(--spring), font-size .3s var(--ease), padding .3s var(--ease);}
+  #btn-oui{left:calc(50% - 78px); transform:translate(-50%,-50%);}
+  #btn-non{left:calc(50% + 78px); transform:translate(-50%,-50%);}
+
+  .q-toast{
+    width:100%; max-height:0; opacity:0; overflow:hidden;
+    background:var(--card); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+    border-radius:16px; box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 10px 26px rgba(0,0,0,.14);
+    display:flex; gap:10px; align-items:flex-start; text-align:left;
+    padding:0 14px;
+    transition:max-height .45s var(--ease), opacity .35s ease, padding .45s var(--ease), margin .45s var(--ease);
+  }
+  .q-toast.show{max-height:90px; opacity:1; padding:12px 14px; margin:16px 0 4px;}
+  .q-toast-icon{
+    width:34px; height:34px; border-radius:10px; flex-shrink:0;
+    background:linear-gradient(135deg,#0a84ff,#0066e0); box-shadow:0 4px 10px rgba(10,132,255,.35);
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+  .q-toast-title{font-size:13px; font-weight:700; color:var(--ink); margin-bottom:1px;}
+  .q-toast-msg{font-size:12.5px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  /* ---------- page planning ---------- */
+  .card{width:min(440px, 92vw); background:var(--card); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+    border-radius:24px; box-shadow:0 0 0 1px var(--card-border), 0 30px 60px rgba(0,0,0,.12); padding:26px 24px 26px;}
+  .card label.section-label{display:block; font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:12px;}
+
+  .cal-icon{width:64px; height:64px; margin:0 auto 16px; border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 10px 26px rgba(0,0,0,.18);}
+  .cal-icon-band{background:var(--accent); color:#fff; font-size:10px; font-weight:800; letter-spacing:.09em; text-align:center; padding:5px 0;}
+  .cal-icon-day{font-size:28px; font-weight:800; text-align:center; color:var(--ink); padding-top:2px; transition:all .3s var(--spring);}
+  .cal-header{font-size:16px; font-weight:700; color:var(--ink); text-align:center; margin-bottom:16px;}
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); gap:2px; margin-bottom:8px; padding-bottom:10px; border-bottom:1px solid var(--card-border);}
+  .cal-weekdays span{text-align:center; font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:20px;}
+  .cal-cell{
+    position:relative;
+    aspect-ratio:1; border:none; background:transparent; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:inherit; font-size:14px; font-weight:600; color:var(--ink); cursor:pointer;
+    transition:background .25s var(--ease), color .25s var(--ease), transform .25s var(--spring), box-shadow .25s ease;
+  }
+  .cal-cell.empty{cursor:default; pointer-events:none;}
+  .cal-cell:hover:not(.empty):not(.selected){background:rgba(127,127,127,.15);}
+  .cal-cell.selected{background:var(--accent); color:#fff; transform:scale(1.05); box-shadow:0 4px 14px rgba(255,55,95,.4);}
+  .cal-cell.today:not(.selected){color:var(--accent); font-weight:800;}
+  .cal-cell.today:not(.selected)::after{
+    content:""; position:absolute; bottom:5px; width:4px; height:4px; border-radius:50%; background:var(--accent);
+  }
+
+  .plan-details{max-height:0; overflow:hidden; opacity:0; transition:max-height .6s var(--ease), opacity .5s ease;}
+  .plan-details.show{max-height:1400px; opacity:1;}
+  .plan-details-inner{padding-top:22px;}
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .chip input{display:none;}
+  .chip label{
+    display:inline-flex; align-items:center; gap:6px; padding:9px 15px; border-radius:980px;
+    font-size:13.5px; font-weight:600; color:var(--ink-soft); background:rgba(127,127,127,.12);
+    cursor:pointer; transition:all .25s var(--ease); border:1px solid transparent;
+  }
+  .chip input:checked + label{background:var(--accent); color:#fff; box-shadow:0 4px 12px rgba(255,55,95,.3);}
+  .chip-add{
+    display:inline-flex; align-items:center; padding:9px 15px; border-radius:980px;
+    font-family:inherit; font-size:13.5px; font-weight:600; color:var(--accent); background:transparent;
+    border:1.5px dashed var(--accent); cursor:pointer; transition:all .25s var(--ease);
+  }
+  .chip-add:hover{background:rgba(255,55,95,.08);}
+  .chip-add:active{transform:scale(.95);}
+
+  .other-field{display:flex; gap:8px; align-items:center; max-height:0; overflow:hidden; opacity:0; transition:max-height .45s var(--ease), opacity .35s ease;}
+  .other-field.show{max-height:60px; opacity:1; margin-top:2px; margin-bottom:22px;}
+  .other-field input{
+    flex:1; min-width:0; font-family:inherit; font-size:14px; padding:12px 16px; border:none; border-radius:12px;
+    background:rgba(127,127,127,.12); color:var(--ink); outline:none;
+    box-shadow:0 0 0 1px transparent; transition:box-shadow .2s ease;
+  }
+  .other-field input:focus{box-shadow:0 0 0 1.5px var(--accent);}
+  .other-field input::placeholder{color:var(--ink-soft);}
+  .other-confirm{
+    flex-shrink:0; width:36px; height:36px; border-radius:50%; border:none; padding:0;
+    background:var(--accent); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; box-shadow:0 4px 10px rgba(255,55,95,.35); transition:transform .3s var(--spring);
+  }
+  .other-confirm:hover{transform:scale(1.08);}
+  .other-confirm:active{transform:scale(.9);}
+  .other-confirm svg{width:15px; height:15px;}
+
+  /* ---------- sélecteur horaire façon roue Apple ---------- */
+  .wheel-picker{
+    position:relative; display:flex; align-items:stretch; justify-content:center;
+    height:170px; margin-bottom:26px; background:rgba(127,127,127,.06); border-radius:18px; padding:0 6px;
+  }
+  .wheel-highlight{
+    position:absolute; top:50%; left:8px; right:8px; height:34px; transform:translateY(-50%);
+    background:rgba(127,127,127,.14); border-radius:9px; pointer-events:none; z-index:0;
+  }
+  .wheel-col{
+    position:relative; z-index:1; width:64px; height:170px; overflow-y:auto;
+    scroll-snap-type:y mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    padding:68px 0;
+  }
+  .wheel-col::-webkit-scrollbar{display:none;}
+  .wheel-item{
+    height:34px; display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:600; color:var(--ink-soft); opacity:.4;
+    scroll-snap-align:center; transition:color .2s ease, opacity .2s ease, transform .2s ease;
+  }
+  .wheel-item.selected{color:var(--ink); font-weight:800; opacity:1; transform:scale(1.06);}
+  .wheel-sep{align-self:center; font-size:19px; font-weight:700; color:var(--ink); padding:0 4px; z-index:1;}
+
+  textarea{width:100%; min-height:82px; resize:vertical; background:rgba(127,127,127,.12); border:none; border-radius:14px; color:var(--ink);
+    font-family:inherit; font-size:14.5px; padding:14px; outline:none; transition:box-shadow .25s ease; box-shadow:0 0 0 1px transparent;}
+  textarea:focus{box-shadow:0 0 0 1.5px var(--accent);}
+  .msg-error{font-size:12.5px; color:var(--accent); margin-top:8px; min-height:16px; font-weight:600; transition:opacity .2s ease;}
+  .card .btn{width:100%; margin-top:6px;}
+  .shake{animation:shake .4s var(--ease);}
+  @keyframes shake{0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 40%{transform:translateX(7px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);}}
+
+  .check-wrap{margin-bottom:22px;}
+  .check-wrap svg{width:74px; height:74px;}
+  .check-circle{stroke:var(--accent); stroke-width:2.5; fill:none; stroke-dasharray:220; stroke-dashoffset:220; animation:drawCircle 1s var(--ease) forwards .1s;}
+  .check-mark{stroke:var(--accent); stroke-width:3; fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:40; stroke-dashoffset:40; animation:drawCheck .5s var(--ease) forwards .9s;}
+  @keyframes drawCircle{to{stroke-dashoffset:0;}}
+  @keyframes drawCheck{to{stroke-dashoffset:0;}}
+
+  /* ---------- carte de confirmation façon rendez-vous ---------- */
+  .appt-card{
+    width:min(420px, 92vw); background:var(--card); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+    border-radius:28px; box-shadow:0 0 0 1px var(--card-border), 0 30px 60px rgba(0,0,0,.14);
+    padding:36px 28px 28px; text-align:center;
+  }
+  .appt-badge{margin:0 auto 14px;}
+  .appt-badge svg{width:60px; height:60px;}
+  .appt-title{font-size:24px; font-weight:700; letter-spacing:-.01em; color:var(--ink); margin-bottom:4px;}
+  .appt-sub{font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin-bottom:22px;}
+  .appt-divider{height:1px; background:var(--card-border); margin:0 -28px 4px;}
+  .appt-row{display:flex; align-items:flex-start; gap:12px; text-align:left; padding:14px 0;}
+  .appt-row + .appt-row{border-top:1px solid var(--card-border);}
+  .appt-row-icon{
+    width:34px; height:34px; border-radius:10px; background:rgba(127,127,127,.12);
+    display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
+  }
+  .appt-row-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .appt-row-label{font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft);}
+  .appt-row-value{font-size:15px; font-weight:600; color:var(--ink); word-break:break-word; line-height:1.4;}
+  .appt-footer{margin-top:22px; font-size:15px; color:var(--ink-soft); font-weight:500;}
+
+  #page-plan{overflow:hidden;}
+  #page-plan::before{
+    content:""; position:absolute; inset:0; z-index:-2;
+    background-image:url('https://commons.wikimedia.org/wiki/Special:FilePath/Eiffel_Tower_sunset,_Paris.jpg?width=1600');
+    background-size:cover; background-position:center 65%;
+    filter:blur(20px) saturate(1.05) brightness(.97);
+    transform:scale(1.15);
+  }
+  #page-plan::after{
+    content:""; position:absolute; inset:0; z-index:-1;
+    background:linear-gradient(180deg, rgba(251,250,248,.72), rgba(251,250,248,.55) 40%, rgba(251,250,248,.78));
+  }
+  .mesh{transition:opacity .6s ease;}
+  body.paris-mode .mesh{opacity:0;}
+
+  footer.credit{position:fixed; bottom:14px; left:0; right:0; text-align:center; font-size:10.5px; letter-spacing:.06em; color:var(--ink-soft); opacity:.5; z-index:2;}
+
+  @media (max-width:420px){.buttons-field{height:140px;} .page{padding:100px 18px 80px;} #btn-oui{left:calc(50% - 64px);} #btn-non{left:calc(50% + 64px);}}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important; transition-duration:.001ms !important;}}
+</style>
+</head>
+<body>
+
+<div class="poweron" id="poweron">
+  <span class="poweron-orb o1"></span>
+  <span class="poweron-orb o2"></span>
+  <svg class="poweron-heart" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 84 C22 63,6 44,6 26 C6 12,17 3,30 3 C40 3,48 9,50 18 C52 9,60 3,70 3 C83 3,94 12,94 26 C94 44,78 63,50 84 Z"/>
+  </svg>
+  <div class="poweron-label" id="poweronLabel">un instant…</div>
+</div>
+
+<div class="mesh"><span></span><span></span><span></span></div>
+<div class="particles" id="particles"></div>
+<div class="curtain" id="curtain">
+  <svg class="curtain-heart" viewBox="0 0 100 90"><path class="curtain-heart-path" d="M50 84 C22 63,6 44,6 26 C6 12,17 3,30 3 C40 3,48 9,50 18 C52 9,60 3,70 3 C83 3,94 12,94 26 C94 44,78 63,50 84 Z"/></svg>
+</div>
+
+<div class="faceid-overlay" id="faceidOverlay">
+  <div class="faceid-frame" id="faceidFrame">
+    <svg class="faceid-brackets" viewBox="0 0 120 120">
+      <path class="bracket" d="M6 30 V14 A8 8 0 0 1 14 6 H30"/>
+      <path class="bracket" d="M90 6 H106 A8 8 0 0 1 114 14 V30"/>
+      <path class="bracket" d="M6 90 V106 A8 8 0 0 1 14 114 H30"/>
+      <path class="bracket" d="M114 90 V106 A8 8 0 0 1 106 114 H90"/>
+      <line class="scan-line" id="scanLine" x1="14" y1="60" x2="106" y2="60"/>
+      <path class="faceid-heart" d="M60 96 C38 78,24 62,24 45 C24 32,34 23,46 23 C53 23,58 27,60 34 C62 27,67 23,74 23 C86 23,96 32,96 45 C96 62,82 78,60 96 Z"/>
+    </svg>
+  </div>
+  <div class="faceid-label" id="faceidLabel">Vérification…</div>
+</div>
+
+<div class="progress" id="progress">
+  <div class="dot" data-step="0"></div>
+  <div class="dot" data-step="1"></div>
+  <div class="dot" data-step="2"></div>
+  <div class="dot" data-step="3"></div>
+  <div class="dot" data-step="4"></div>
+  <div class="dot" data-step="5"></div>
+</div>
+
+<div id="app">
+
+  <section class="page active" id="page-gate">
+    <div class="lock-clock reveal-item">
+      <div class="lock-time" id="lockTime">--:--</div>
+      <div class="lock-date" id="lockDate">--</div>
+    </div>
+    <div class="notif-card gate-card reveal-item" id="gateNotif">
+      <div class="notif-top">
+        <div class="notif-icon">🔒<span class="notif-badge">1</span></div>
+        <div class="notif-meta">
+          <div class="notif-app-row"><span class="notif-app">Messages</span><span class="notif-time">maintenant</span></div>
+          <div class="notif-sender blurred-text">Expéditeur masqué</div>
+          <div class="notif-preview blurred-text">•••••• •••• •••••••• ••• •••</div>
+        </div>
+      </div>
+      <div class="notif-tap">touche pour déverrouiller et lire</div>
+    </div>
+  </section>
+
+  <section class="page" id="page-name">
+    <div class="id-card reveal-item">
+      <div class="id-badge reveal-item">
+        <svg viewBox="0 0 100 90"><path d="M50 84 C22 63,6 44,6 26 C6 12,17 3,30 3 C40 3,48 9,50 18 C52 9,60 3,70 3 C83 3,94 12,94 26 C94 44,78 63,50 84 Z" fill="none" stroke="#1d1d1f" stroke-width="7"/></svg>
+      </div>
+      <div class="script-tagline reveal-item">une petite surprise t'attend</div>
+      <div class="eyebrow reveal-item">Avant toute chose</div>
+      <h1 class="reveal-item">Qui es-tu ?</h1>
+      <p class="lead reveal-item">Dis-moi ton prénom, puis maintiens le capteur pour déverrouiller la suite.</p>
+      <input type="text" id="name-input" class="reveal-item" placeholder="Ton prénom" autocomplete="off">
+      <div class="touchid-wrap reveal-item">
+        <button type="button" class="touchid-btn" id="touchid-btn" aria-label="Maintenir pour déverrouiller">
+          <svg class="touchid-ring" viewBox="0 0 100 100">
+            <g transform="rotate(-90 50 50)">
+              <circle class="ring-bg" cx="50" cy="50" r="44"/>
+              <circle class="ring-progress" id="ringProgress" cx="50" cy="50" r="44"/>
+            </g>
+          </svg>
+          <div class="touchid-face">
+            <svg class="touchid-icon" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+              <g stroke-width="5.5" stroke-linecap="round">
+                <path d="M16 72 A34 44 0 0 1 84 72"/>
+                <path d="M23 72 A27 35 0 0 1 77 72"/>
+                <path d="M30 72 A20 26 0 0 1 70 72"/>
+                <path d="M37 72 A13 17 0 0 1 63 72"/>
+                <path d="M44 72 A6 9 0 0 1 56 72"/>
+              </g>
+            </svg>
+          </div>
+        </button>
+        <div class="touchid-label" id="touchidLabel">Maintenir pour déverrouiller</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-reject">
+    <div class="eyebrow reveal-item">Hmm</div>
+    <h1 class="reveal-item">Tu n'es pas la personne<br>que je veux date.</h1>
+    <p class="lead reveal-item">(Mais si tu es Nina et que tu as juste mal tapé, retente ta chance.)</p>
+    <button class="btn outline reveal-item" id="retry-btn">Réessayer</button>
+  </section>
+
+  <section class="page" id="page-letter">
+    <div class="script-tagline reveal-item">pour toi, et personne d'autre</div>
+    <h1 class="reveal-item" style="margin-bottom:34px;">Une notification t'attend</h1>
+    <div class="notif-card reveal-item" id="envelope">
+      <div class="notif-top">
+        <div class="notif-icon">💬</div>
+        <div class="notif-meta">
+          <div class="notif-app-row"><span class="notif-app">Messages</span><span class="notif-time">maintenant</span></div>
+          <div class="notif-sender">Aaron à la guitare 🎸</div>
+          <div class="notif-preview">J'ai une question à te poser...</div>
+        </div>
+      </div>
+      <div class="notif-tap">touche pour ouvrir</div>
+      <div class="chat-thread" id="chatThread">
+        <div class="messages-list" id="messagesList"></div>
+        <div class="reply-bar" id="replyBar">
+          <div class="reply-field">Envoyer pour lire la suite</div>
+          <button class="reply-send" id="to-question" aria-label="Envoyer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M6 11l6-6 6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-question">
+    <div class="q-card">
+      <div class="eyebrow reveal-item">La question</div>
+      <h1 class="reveal-item">Tu veux un date avec moi ?</h1>
+      <div class="q-toast" id="qToast">
+        <div class="q-toast-icon">💬</div>
+        <div>
+          <div class="q-toast-title">Aaron à la guitare 🎸</div>
+          <div class="q-toast-msg" id="qToastMsg">Nouveau message</div>
+        </div>
+      </div>
+      <div class="buttons-field reveal-item" id="buttons-field">
+        <button class="btn accent btn-oui" id="btn-oui"><span class="glow-pulse"></span>Oui</button>
+        <button class="btn outline btn-non" id="btn-non">Non</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-plan">
+    <div class="eyebrow reveal-item">Elle a dit oui</div>
+    <h1 class="reveal-item">Ça te dirait un date à Paris avec moi ?</h1>
+    <p class="lead reveal-item">Choisis un jour d'août qui t'arrange, et dis-moi ce dont tu as envie.</p>
+    <div class="card reveal-item">
+      <div class="cal-icon">
+        <div class="cal-icon-band">AOÛT</div>
+        <div class="cal-icon-day" id="calIconDay">♥</div>
+      </div>
+      <label class="section-label">Un jour en août</label>
+      <div class="cal-header">Août 2026</div>
+      <div class="cal-weekdays">
+        <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+      </div>
+      <div class="cal-grid" id="calendarGrid"></div>
+
+      <div class="plan-details" id="planDetails">
+        <div class="plan-details-inner">
+          <label class="section-label">Horaire souhaité</label>
+          <div class="wheel-picker" id="wheelPicker">
+            <div class="wheel-highlight"></div>
+            <div class="wheel-col" id="wheelHours"></div>
+            <div class="wheel-sep">h</div>
+            <div class="wheel-col" id="wheelMinutes"></div>
+          </div>
+
+          <label class="section-label">Tu as des idées de ce que t'aimerais faire ? (facultatif)</label>
+          <div class="chips" id="activityChips">
+            <div class="chip"><input type="checkbox" id="a1" value="Tasty Crousty"><label for="a1">Tasty Crousty</label></div>
+            <div class="chip"><input type="checkbox" id="a2" value="Parler"><label for="a2">Parler</label></div>
+            <div class="chip"><input type="checkbox" id="a3" value="Se balader"><label for="a3">Se balader</label></div>
+            <div class="chip"><input type="checkbox" id="a4" value="Manger"><label for="a4">Manger</label></div>
+            <div class="chip"><input type="checkbox" id="a5" value="Terrasse"><label for="a5">Terrasse</label></div>
+            <div class="chip"><input type="checkbox" id="a6" value="Se poser sur les Quais"><label for="a6">Se poser sur les Quais</label></div>
+            <button type="button" class="chip-add" id="chipAddBtn">+ Autre</button>
+          </div>
+          <div class="other-field" id="otherField">
+            <input type="text" id="otherInput" placeholder="Ta propre idée...">
+            <button type="button" class="other-confirm" id="otherConfirm" aria-label="Ajouter">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+            </button>
+          </div>
+
+          <label class="section-label" for="msg">Message (facultatif)</label>
+          <textarea id="msg" placeholder="Écris quelque chose si tu veux..."></textarea>
+          <div class="msg-error" id="msg-error">&nbsp;</div>
+          <button class="btn accent" id="send-btn">Envoyer</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-confirm">
+    <div class="appt-card reveal-item">
+      <div class="appt-badge">
+        <svg viewBox="0 0 80 80"><circle class="check-circle" cx="40" cy="40" r="35"/><path class="check-mark" d="M24 41 L35 52 L57 28"/></svg>
+      </div>
+      <div class="appt-title">C'est noté !</div>
+      <div class="appt-sub">Rendez-vous confirmé</div>
+      <div class="appt-divider"></div>
+      <div class="appt-row">
+        <div class="appt-row-icon">📅</div>
+        <div class="appt-row-text"><span class="appt-row-label">Date</span><span class="appt-row-value" id="confirm-date"></span></div>
+      </div>
+      <div class="appt-row">
+        <div class="appt-row-icon">🕓</div>
+        <div class="appt-row-text"><span class="appt-row-label">Heure</span><span class="appt-row-value" id="confirm-time"></span></div>
+      </div>
+      <div class="appt-row" id="confirm-activities-wrap">
+        <div class="appt-row-icon">✨</div>
+        <div class="appt-row-text"><span class="appt-row-label">Envies</span><span class="appt-row-value" id="confirm-activities"></span></div>
+      </div>
+      <div class="appt-row" id="confirm-msg-wrap">
+        <div class="appt-row-icon">💬</div>
+        <div class="appt-row-text"><span class="appt-row-label">Message</span><span class="appt-row-value" id="confirm-msg"></span></div>
+      </div>
+      <div class="appt-footer">J'ai hâte de te voir. 🤍</div>
+    </div>
+  </section>
+
+</div>
+<footer class="credit">fait avec 🤍</footer>
+
+<script>
+(function(){
+  const WEBHOOK_URL = "https://discord.com/api/webhooks/1531382871397240952/XXRxa9nEfEZGjW7DZvbPYu_az5D_XEUfGMEbKB_FwEPYK0M6U5DwTEW8VnFXFO-GbvuU";
+
+  // particules
+  const particlesEl = document.getElementById('particles');
+  const shapes = ['dot','dot','heart'];
+  for(let i=0;i<16;i++){
+    const el = document.createElement('div');
+    const type = shapes[Math.floor(Math.random()*shapes.length)];
+    el.className = 'particle ' + type;
+    const left = Math.random()*100;
+    const duration = 14 + Math.random()*14;
+    const delay = Math.random()*18;
+    el.style.left = left + '%';
+    el.style.animationDuration = duration + 's';
+    el.style.animationDelay = '-' + delay + 's';
+    if(type === 'dot'){
+      const size = 5 + Math.random()*9;
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+    } else {
+      el.textContent = '❤';
+      el.style.fontSize = (10 + Math.random()*12) + 'px';
+    }
+    particlesEl.appendChild(el);
+  }
+
+  const stepMap = {'page-gate':0,'page-name':1,'page-reject':1,'page-letter':2,'page-question':3,'page-plan':4,'page-confirm':5};
+  const progress = document.getElementById('progress');
+  const curtain = document.getElementById('curtain');
+
+  function updateProgress(pageId){
+    const step = stepMap[pageId];
+    progress.querySelectorAll('.dot').forEach(d=> d.classList.toggle('on', Number(d.dataset.step) === step));
+  }
+
+  function revealChildren(pageEl){
+    const items = pageEl.querySelectorAll('.reveal-item');
+    items.forEach(el=>el.classList.remove('show'));
+    items.forEach((el, i)=>{
+      el.style.transitionDelay = (i * 90) + 'ms';
+      requestAnimationFrame(()=>{ requestAnimationFrame(()=>el.classList.add('show')); });
+    });
+  }
+
+  function goTo(pageId){
+    const current = document.querySelector('.page.active');
+    const next = document.getElementById(pageId);
+    if(current === next) return;
+
+    curtain.classList.add('active');
+
+    setTimeout(()=>{
+      if(current){ current.classList.remove('active'); }
+      next.classList.add('active');
+      revealChildren(next);
+      updateProgress(pageId);
+      document.body.classList.toggle('paris-mode', pageId === 'page-plan');
+      window.scrollTo(0,0);
+      requestAnimationFrame(()=>{
+        setTimeout(()=> curtain.classList.remove('active'), 40);
+      });
+    }, 620);
+  }
+
+  revealChildren(document.getElementById('page-gate'));
+  updateProgress('page-gate');
+
+  // ---- écran de chargement cœur blanc ----
+  const poweron = document.getElementById('poweron');
+  const appEl = document.getElementById('app');
+  const poweronLabel = document.getElementById('poweronLabel');
+  setTimeout(()=>{ if(poweronLabel) poweronLabel.classList.add('show'); }, 550);
+  setTimeout(()=>{
+    if(poweron) poweron.classList.add('fade');
+    if(appEl) appEl.classList.add('woke');
+  }, 2500);
+  if(poweron){ setTimeout(()=> poweron.remove(), 3300); }
+
+  // ---- horloge style lock screen ----
+  function updateLockClock(){
+    const now = new Date();
+    const lockTime = document.getElementById('lockTime');
+    const lockDate = document.getElementById('lockDate');
+    if(lockTime){ lockTime.textContent = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}); }
+    if(lockDate){ lockDate.textContent = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'}); }
+  }
+  updateLockClock();
+  setInterval(updateLockClock, 15000);
+
+  function normalize(str){ return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase(); }
+
+  // ---- porte d'entrée : notification masquée ----
+  const gateNotif = document.getElementById('gateNotif');
+  gateNotif.addEventListener('click', function(){
+    if(gateNotif.classList.contains('opened')) return;
+    gateNotif.classList.add('opened');
+    setTimeout(()=> goTo('page-name'), 280);
+  });
+
+  // ---- overlay HeartID (façon Face ID) ----
+  const faceidOverlay = document.getElementById('faceidOverlay');
+  const faceidLabel = document.getElementById('faceidLabel');
+
+  function playHeartID(success){
+    faceidOverlay.classList.remove('success','fail');
+    faceidLabel.textContent = 'Vérification…';
+    faceidOverlay.classList.add('show');
+    setTimeout(function(){
+      if(success){
+        faceidOverlay.classList.add('success');
+        faceidLabel.textContent = 'Identité reconnue';
+        setTimeout(function(){
+          faceidOverlay.classList.remove('show');
+          goTo('page-letter');
+        }, 700);
+      } else {
+        faceidOverlay.classList.add('fail');
+        faceidLabel.textContent = 'Non reconnu';
+        setTimeout(function(){
+          faceidOverlay.classList.remove('show','fail');
+          goTo('page-reject');
+        }, 700);
+      }
+    }, 900);
+  }
+
+  // ---- Touch ID : maintien pour déverrouiller ----
+  const nameInput = document.getElementById('name-input');
+  const touchidBtn = document.getElementById('touchid-btn');
+  const ringProgress = document.getElementById('ringProgress');
+  const RING_R = 44;
+  const RING_CIRC = 2 * Math.PI * RING_R;
+  const HOLD_MS = 1100;
+  ringProgress.style.strokeDasharray = String(RING_CIRC);
+  ringProgress.style.strokeDashoffset = String(RING_CIRC);
+
+  let holdActive = false, holdStart = 0, holdRAF = null;
+
+  function setRingProgress(p){
+    ringProgress.style.strokeDashoffset = String(RING_CIRC * (1 - Math.max(0, Math.min(1, p))));
+  }
+
+  function holdStep(now){
+    const p = (now - holdStart) / HOLD_MS;
+    setRingProgress(p);
+    if(p >= 1){
+      holdActive = false;
+      touchidBtn.classList.remove('active');
+      playHeartID(normalize(nameInput.value) === 'nina');
+      return;
+    }
+    holdRAF = requestAnimationFrame(holdStep);
+  }
+
+  function startHold(e){
+    if(e.cancelable) e.preventDefault();
+    if(holdActive) return;
+    holdActive = true;
+    touchidBtn.classList.add('active');
+    ringProgress.style.transition = 'none';
+    holdStart = performance.now();
+    holdRAF = requestAnimationFrame(holdStep);
+  }
+
+  function releaseHold(){
+    if(holdRAF) cancelAnimationFrame(holdRAF);
+    if(!holdActive) return;
+    holdActive = false;
+    touchidBtn.classList.remove('active');
+    ringProgress.style.transition = 'stroke-dashoffset .4s ease';
+    setRingProgress(0);
+  }
+
+  touchidBtn.addEventListener('pointerdown', startHold);
+  touchidBtn.addEventListener('pointerup', releaseHold);
+  touchidBtn.addEventListener('pointerleave', releaseHold);
+  touchidBtn.addEventListener('pointercancel', releaseHold);
+
+  document.getElementById('retry-btn').addEventListener('click', function(){
+    nameInput.value = '';
+    goTo('page-name');
+    setTimeout(()=>nameInput.focus(), 500);
+  });
+
+  // ---- notification -> fil de discussion ----
+  const envelope = document.getElementById('envelope');
+  const messagesList = document.getElementById('messagesList');
+  const toQuestionBtn = document.getElementById('to-question');
+  const replyBar = document.getElementById('replyBar');
+  const chatMessages = [
+    "Nina,",
+    "J'ai une question à te poser,",
+    "et j'avais envie de le faire un peu différemment, à ma manière.",
+    "Toi qui veux en savoir plus sur ce que je fais dans la vie,",
+    "voici une partie de mon travail 🎸",
+    "Alors avant de continuer, prends une grande respiration..."
+  ];
+
+  function playChat(){
+    let i = 0;
+    function nextMessage(){
+      if(i >= chatMessages.length){
+        setTimeout(()=>{ replyBar.classList.add('show'); }, 300);
+        return;
+      }
+      const typing = document.createElement('div');
+      typing.className = 'typing-bubble';
+      typing.innerHTML = '<span></span><span></span><span></span>';
+      messagesList.appendChild(typing);
+      const delay = 650 + Math.random()*450;
+      setTimeout(()=>{
+        typing.remove();
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = chatMessages[i];
+        messagesList.appendChild(bubble);
+        i++;
+        setTimeout(nextMessage, 420);
+      }, delay);
+    }
+    nextMessage();
+  }
+
+  envelope.addEventListener('click', function(e){
+    if(envelope.classList.contains('open')) return;
+    if(e.target.closest('#to-question')) return;
+    envelope.classList.add('open');
+    setTimeout(playChat, 250);
+  });
+  toQuestionBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    goTo('page-question');
+  });
+
+  // ---- bouton non fuyant ----
+  const field = document.getElementById('buttons-field');
+  const btnOui = document.getElementById('btn-oui');
+  const btnNon = document.getElementById('btn-non');
+  let dodgeCount = 0;
+
+  const qToast = document.getElementById('qToast');
+  const qToastMsg = document.getElementById('qToastMsg');
+  const toastMessages = ["Tu vas dire oui, je le sens 😏","Un petit oui et c'est réglé 🎸","J'attends toujours ta réponse...","Allez, tente ta chance sur le bouton Oui 👀","Toujours là :)","Tu es sûre de vouloir refuser ?"];
+  let toastTimer = null;
+  function showQToast(){
+    if(!qToast) return;
+    qToastMsg.textContent = toastMessages[Math.floor(Math.random()*toastMessages.length)];
+    qToast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> qToast.classList.remove('show'), 2200);
+  }
+
+  function escapeNonButton(){
+    showQToast();
+    dodgeCount++;
+    const rect = field.getBoundingClientRect();
+    const maxLeft = Math.max(rect.width - btnNon.offsetWidth, 10);
+    const maxTop = Math.max(rect.height - btnNon.offsetHeight, 10);
+    btnNon.style.left = (Math.random()*maxLeft) + 'px';
+    btnNon.style.top = (Math.random()*maxTop) + 'px';
+    btnNon.style.transform = 'translateY(0)';
+    const scale = Math.min(1 + dodgeCount * 0.05, 1.6);
+    btnOui.style.fontSize = (16 * scale) + 'px';
+    btnOui.style.padding = (15 * scale) + 'px ' + (32 * scale) + 'px';
+  }
+  btnNon.addEventListener('mouseenter', escapeNonButton);
+  btnNon.addEventListener('touchstart', function(e){ e.preventDefault(); escapeNonButton(); }, {passive:false});
+  btnNon.addEventListener('click', function(e){ e.preventDefault(); escapeNonButton(); });
+  btnOui.addEventListener('click', function(){ goTo('page-plan'); });
+
+  const questionObserver = new MutationObserver(function(){
+    if(document.getElementById('page-question').classList.contains('active')){
+      btnNon.style.left = ''; btnNon.style.top = ''; btnNon.style.transform = '';
+      btnOui.style.fontSize = '16px'; btnOui.style.padding = '15px 32px';
+      dodgeCount = 0;
+      qToast.classList.remove('show');
+    }
+  });
+  questionObserver.observe(document.getElementById('page-question'), {attributes:true, attributeFilter:['class']});
+
+  // ---- calendrier Août 2026 ----
+  const calendarGrid = document.getElementById('calendarGrid');
+  const planDetails = document.getElementById('planDetails');
+  const calIconDay = document.getElementById('calIconDay');
+  let selectedDate = null;
+
+  function buildCalendar(){
+    const year = 2026, monthIndex = 7; // août
+    const firstDay = new Date(year, monthIndex, 1);
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    let startWeekday = firstDay.getDay(); // 0 = dimanche
+    startWeekday = (startWeekday + 6) % 7; // 0 = lundi
+
+    const now = new Date();
+    const isCurrentMonth = now.getFullYear() === year && now.getMonth() === monthIndex;
+    const todayDate = now.getDate();
+
+    calendarGrid.innerHTML = '';
+    for(let i=0;i<startWeekday;i++){
+      const empty = document.createElement('div');
+      empty.className = 'cal-cell empty';
+      calendarGrid.appendChild(empty);
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      const cell = document.createElement('button');
+      cell.type = 'button';
+      cell.className = 'cal-cell';
+      if(isCurrentMonth && d === todayDate){ cell.classList.add('today'); }
+      cell.textContent = d;
+      cell.addEventListener('click', function(){
+        calendarGrid.querySelectorAll('.cal-cell.selected').forEach(c=>c.classList.remove('selected'));
+        cell.classList.add('selected');
+        selectedDate = new Date(year, monthIndex, d);
+        calIconDay.textContent = d;
+        planDetails.classList.add('show');
+      });
+      calendarGrid.appendChild(cell);
+    }
+  }
+  buildCalendar();
+
+  // ---- roue horaire façon Apple ----
+  const wheelHours = document.getElementById('wheelHours');
+  const wheelMinutes = document.getElementById('wheelMinutes');
+  const ITEM_H = 34;
+  const hourValues = [];
+  for(let h = 7; h <= 23; h++){ hourValues.push(String(h).padStart(2,'0')); }
+  const minuteValues = [];
+  for(let m = 0; m <= 59; m++){ minuteValues.push(String(m).padStart(2,'0')); }
+  let selectedHour = '18';
+  let selectedMinute = '00';
+
+  function buildWheelColumn(container, values){
+    container.innerHTML = '';
+    values.forEach(function(v){
+      const item = document.createElement('div');
+      item.className = 'wheel-item';
+      item.textContent = v;
+      container.appendChild(item);
+    });
+  }
+  buildWheelColumn(wheelHours, hourValues);
+  buildWheelColumn(wheelMinutes, minuteValues);
+
+  function updateWheelSelection(col, values){
+    const idx = Math.max(0, Math.min(values.length - 1, Math.round(col.scrollTop / ITEM_H)));
+    Array.from(col.children).forEach(function(el, i){ el.classList.toggle('selected', i === idx); });
+    return values[idx];
+  }
+
+  function attachWheel(col, values, onChange){
+    let scrollTimeout;
+    col.addEventListener('scroll', function(){
+      updateWheelSelection(col, values);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(function(){
+        const idx = Math.max(0, Math.min(values.length - 1, Math.round(col.scrollTop / ITEM_H)));
+        col.scrollTo({top: idx * ITEM_H, behavior:'smooth'});
+        onChange(updateWheelSelection(col, values));
+      }, 130);
+    });
+  }
+  attachWheel(wheelHours, hourValues, function(v){ selectedHour = v; });
+  attachWheel(wheelMinutes, minuteValues, function(v){ selectedMinute = v; });
+
+  function initWheel(col, values, defaultValue){
+    const idx = values.indexOf(defaultValue);
+    col.scrollTop = (idx >= 0 ? idx : 0) * ITEM_H;
+    updateWheelSelection(col, values);
+  }
+  setTimeout(function(){
+    initWheel(wheelHours, hourValues, selectedHour);
+    initWheel(wheelMinutes, minuteValues, selectedMinute);
+  }, 60);
+
+  // ---- ajout répétable d'envies personnalisées ----
+  const chipAddBtn = document.getElementById('chipAddBtn');
+  const otherField = document.getElementById('otherField');
+  const otherInput = document.getElementById('otherInput');
+  const otherConfirm = document.getElementById('otherConfirm');
+  const activityChips = document.getElementById('activityChips');
+  let customCount = 0;
+
+  chipAddBtn.addEventListener('click', function(){
+    otherField.classList.add('show');
+    setTimeout(()=>otherInput.focus(), 260);
+  });
+
+  function confirmOtherActivity(){
+    const text = otherInput.value.trim();
+    otherField.classList.remove('show');
+    otherInput.value = '';
+    if(!text) return;
+    customCount++;
+    const id = 'aCustom' + customCount;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.id = id;
+    input.value = text;
+    input.checked = true;
+    const label = document.createElement('label');
+    label.htmlFor = id;
+    label.textContent = text;
+    chip.appendChild(input);
+    chip.appendChild(label);
+    activityChips.insertBefore(chip, chipAddBtn);
+  }
+  otherConfirm.addEventListener('click', confirmOtherActivity);
+  otherInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); confirmOtherActivity(); }
+  });
+
+  // ---- envoi ----
+  const sendBtn = document.getElementById('send-btn');
+  const msg = document.getElementById('msg');
+  const msgError = document.getElementById('msg-error');
+  const card = document.querySelector('#page-plan .card');
+
+  function sendToDiscord(dateLabel, time, activities, message){
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        embeds: [{
+          title: "🗼 Nina a répondu !",
+          color: 16729183,
+          fields: [
+            {name: "Date", value: dateLabel, inline: true},
+            {name: "Horaire", value: time, inline: true},
+            {name: "Envies", value: activities && activities.length ? activities.join(', ') : "—", inline: false},
+            {name: "Message", value: message && message.length ? message : "—", inline: false}
+          ],
+          timestamp: new Date().toISOString()
+        }]
+      })
+    }).catch(function(err){ console.error("Webhook error:", err); });
+  }
+
+  sendBtn.addEventListener('click', function(){
+    if(!selectedDate){
+      msgError.textContent = "Choisis une date avant de continuer.";
+      card.classList.add('shake'); setTimeout(()=>card.classList.remove('shake'), 400);
+      return;
+    }
+    msgError.textContent = '\u00A0';
+
+    const dateLabel = selectedDate.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const time = selectedHour + 'h' + selectedMinute;
+    const activities = Array.from(document.querySelectorAll('#activityChips input:checked')).map(el => el.value);
+    const message = msg.value.trim();
+
+    document.getElementById('confirm-date').textContent = dateLabel;
+    document.getElementById('confirm-time').textContent = time;
+
+    const actWrap = document.getElementById('confirm-activities-wrap');
+    if(activities.length){
+      document.getElementById('confirm-activities').textContent = activities.join(', ');
+      actWrap.style.display = '';
+    } else {
+      actWrap.style.display = 'none';
+    }
+
+    const msgWrap = document.getElementById('confirm-msg-wrap');
+    if(message.length){
+      document.getElementById('confirm-msg').textContent = message;
+      msgWrap.style.display = '';
+    } else {
+      msgWrap.style.display = 'none';
+    }
+
+    sendBtn.disabled = true;
+    sendToDiscord(dateLabel, time, activities, message);
+    goTo('page-confirm');
+  });
+})();
+</script>
+</body>
+</html>
